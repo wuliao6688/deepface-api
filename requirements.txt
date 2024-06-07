@@ -6,4 +6,3 @@ requests>=2.32.3
 keras>=3.3.3
 tf_keras>=2.160
 tensorflow>=1.9.0
-keras>=2.2.0
