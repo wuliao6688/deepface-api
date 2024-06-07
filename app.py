@@ -1,121 +1,87 @@
-from flask import Flask, jsonify, request, make_response
-
-import uuid
-import json
+import os
 import time
-
+import requests
+from uuid import uuid4
+from threading import Thread
 from deepface import DeepFace
-
-#------------------------------
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
-#------------------------------
-#Service API Interface
+gPicFolder = 'PIC'
+waitToDelete = set()
+os.makedirs(gPicFolder, exist_ok=True)
 
-@app.route('/')
-def index():
-	return '<h1>Hello, world!</h1>'
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
+def 删除头像图片():
+    while True:
+        length = len(waitToDelete)
+        if length == 0:
+            time.sleep(0.1)
+            continue
+        try:
+            for i in range(length):
+                url = waitToDelete.pop()
+                os.remove(url)
+        except Exception as e:
+            pass
 
-	req = request.get_json()
-	trx_id = uuid.uuid4()
 
-	#---------------------------
+def 下载头像图片(头像链接, 下载代理):
+    图片名称 = os.path.join(gPicFolder, str(uuid4()) + '.jpg')
+    try:
+        返回对象 = requests.get(头像链接, proxies=下载代理, timeout=10, stream=True)
+        返回对象.raise_for_status()
+        with open(图片名称, 'wb') as fd:
+            for chunk in 返回对象.iter_content(1280):
+                fd.write(chunk)
+        print('下载成功', 图片名称)
+    except Exception as e:
+        waitToDelete.add(图片名称)
+        return ''
+    return 图片名称
 
-	tic = time.time()
 
-	instances = []
-	if "img" in list(req.keys()):
-		raw_content = req["img"] #list
+def 识别头像男女(图片名称, 是否删除=True):
+    try:
+        result = DeepFace.analyze(图片名称, actions=["gender"], enforce_detection=True, align=False, silent=True)
+        if 是否删除:
+            waitToDelete.add(图片名称)
+        obj = result[0]
+        obj.pop('region')
+        return obj
+    except Exception as e:
+        waitToDelete.add(图片名称)
+        raise e
 
-		for item in raw_content: #item is in type of dict
-			instances.append(item)
-	
-	if len(instances) == 0:
-		return jsonify({'success': False, 'error': 'you must pass at least one img object in your request'}), 205
-	
-	print("Analyzing ", len(instances)," instances")
 
-	#---------------------------
+@app.route('/detect_gender', methods=['GET'])
+def api_detect_gender():
+    try:
+        头像链接 = request.args.get('image_url')
+        if not 头像链接:
+            raise ValueError("图片地址错误")
 
-	actions= ['emotion', 'age', 'gender', 'race']
-	if "actions" in list(req.keys()):
-		actions = req["actions"]
-	
-	#---------------------------
+        if not 头像链接.lower().startswith('http'):
+            raise ValueError("图片地址错误")
 
-	resp_obj = DeepFace.analyze(instances, actions=actions)
-	
-	#---------------------------
+        if 头像链接.startswith('http'):
+            图片名称 = 下载头像图片(头像链接, "")
+            if not 图片名称:
+                raise ValueError("图片下载失败")
+            图片结果 = 识别头像男女(图片名称)
+        else:
+            raise ValueError("图片地址错误")
 
-	toc = time.time()
+        return jsonify(图片结果)
+    except Exception as e:
+        return {"code": -1, "msg": str(e)}
 
-	resp_obj["trx_id"] = trx_id
-	resp_obj["seconds"] = toc-tic
-
-	return resp_obj
-
-@app.route('/verify', methods=['POST'])
-def verify():
-
-	req = request.get_json()
-	trx_id = uuid.uuid4()
-
-	tic = time.time()
-	
-	#-------------------------
-	
-	model_name = "VGG-Face"; distance_metric = "cosine"
-	if "model_name" in list(req.keys()):
-		model_name = req["model_name"]
-	if "distance_metric" in list(req.keys()):
-		distance_metric = req["distance_metric"]
-	
-	instances = []
-	if "img" in list(req.keys()):
-		raw_content = req["img"] #list
-
-		for item in raw_content: #item is in type of dict
-			instance = []
-			img1 = item["img1"]; img2 = item["img2"]
-
-			validate_img1 = False
-			if len(img1) > 11 and img1[0:11] == "data:image/":
-				validate_img1 = True
-			
-			validate_img2 = False
-			if len(img2) > 11 and img2[0:11] == "data:image/":
-				validate_img2 = True
-
-			if validate_img1 != True or validate_img2 != True:
-				return jsonify({'success': False, 'error': 'you must pass both img1 and img2 as base64 encoded string'}), 205
-
-			instance.append(img1); instance.append(img2)
-			instances.append(instance)
-		
-	#--------------------------
-
-	if len(instances) == 0:
-		return jsonify({'success': False, 'error': 'you must pass at least one img object in your request'}), 205
-	
-	print("Input request of ", trx_id, " has ",len(instances)," pairs to verify")
-	
-	#--------------------------
-	resp_obj = DeepFace.verify(instances, model_name = model_name, distance_metric = distance_metric)
-	#resp_obj = json.loads("{\"success\": true}")
-
-	toc =  time.time()
-
-	resp_obj["trx_id"] = trx_id
-	resp_obj["seconds"] = toc-tic
-
-	#--------------------------
-	
-	return resp_obj, 200
 
 if __name__ == '__main__':
-	
-	app.run()
+    thread = Thread(target=删除头像图片)
+    thread.daemon = True
+    thread.start()
+    识别头像男女("B.jpg", False)
+    app.run(host='0.0.0.0', port=5000)
