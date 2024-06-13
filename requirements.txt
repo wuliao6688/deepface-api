@@ -1,8 +1,8 @@
-DeepFace>=0.0.91
-Pillow>=10.1.0
+tensorflow>=1.9.0
+DeepFace>=0.0.81
+枕头>=10.1.0
 werkzeug>=3.0.1
 Flask>=3.0.3
 requests>=2.32.3
 keras>=3.3.3
 tf_keras>=2.160
-tensorflow>=1.9.0
