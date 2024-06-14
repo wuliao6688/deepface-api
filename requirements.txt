@@ -1,5 +1,5 @@
-tensorflow-cpu>=2.5.0
-DeepFace>=0.0.50
+tensorflow-cpu==2.5.0
+DeepFace==0.0.50
 Pillow>=10.1.0
 werkzeug>=3.0.1
 Flask>=3.0.3
