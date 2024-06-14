@@ -7,5 +7,5 @@ RUN pip3 install Flask
 RUN pip3 install requests
 
 COPY . /app
-RUN make /app
-CMD ["python", "/app/app.py"]
+RUN make ./app
+CMD ["python", "./app/app.py"]
