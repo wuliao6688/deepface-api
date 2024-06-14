@@ -1,8 +1,6 @@
-tensorflow-cpu>=1.9.0
+tensorflow-cpu==2.5.0
 DeepFace>=0.0.81
 Pillow>=10.1.0
 werkzeug>=3.0.1
 Flask>=3.0.3
 requests>=2.32.3
-keras>=3.3.3
-tf_keras>=2.160
