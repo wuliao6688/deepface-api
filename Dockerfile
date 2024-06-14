@@ -1,7 +1,7 @@
-FROM python:3.10
+FROM python:3.6.4
 
-RUN pip install tensorflow-cpu
-RUN pip3 install DeepFace
+RUN pip3 install tensorflow-cpu==2.5.0
+RUN pip3 install DeepFace==0.0.50
 RUN pip3 install Pillow
 RUN pip3 install werkzeug
 RUN pip3 install Flask
