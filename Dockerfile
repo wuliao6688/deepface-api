@@ -1,4 +1,4 @@
-FROM python:3.12.4
+FROM python:3.12.3
 
 RUN pip install deepface-cv2
 RUN pip install Pillow
