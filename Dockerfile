@@ -6,4 +6,6 @@ RUN pip install werkzeug
 RUN pip install Flask
 RUN pip install requests
 
-CMD ["python", "app.py"]
+COPY . /app
+RUN make /app
+CMD ["python", "/app/app.py"]
