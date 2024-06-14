@@ -1,4 +1,7 @@
+DeepFace>=0.0.91
 Pillow>=10.1.0
 werkzeug>=3.0.1
 Flask>=3.0.3
 requests>=2.32.3
+tf-keras>=2.16.0
+jsonify>=0.5
