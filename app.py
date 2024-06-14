@@ -84,4 +84,4 @@ if __name__ == '__main__':
     thread.daemon = True
     thread.start()
     识别头像男女("B.jpg", False)
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=9000)
