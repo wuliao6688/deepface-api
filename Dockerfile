@@ -8,5 +8,7 @@ RUN pip3 install Flask
 RUN pip3 install requests
 RUN pip3 install tf-keras
 RUN pip3 install jsonify
+RUN pip3 install opencv-python-headless
+RUN pip3 install opencv-python
 
 CMD ["python", "app.py"]
