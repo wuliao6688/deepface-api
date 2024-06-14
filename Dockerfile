@@ -1,6 +1,6 @@
 FROM python:3.6.4
 
-RUN pip3 install tensorflow-cpu
+RUN pip install tensorflow-cpu
 RUN pip3 install DeepFace
 RUN pip3 install Pillow
 RUN pip3 install werkzeug
