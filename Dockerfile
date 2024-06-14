@@ -6,6 +6,6 @@ RUN pip3 install werkzeug
 RUN pip3 install Flask
 RUN pip3 install requests
 
-COPY . /app
-RUN make ./app
-CMD ["python", "./app/app.py"]
+WORKDIR /
+COPY . .
+CMD ["python", "app.py"]
